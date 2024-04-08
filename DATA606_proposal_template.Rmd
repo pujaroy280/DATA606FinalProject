@@ -8,7 +8,7 @@ author: "Puja Roy"
 For this final project proposal, I am planning to leverage the **Drug Use by Age** dataset from FiveThirtyEight https://github.com/fivethirtyeight/data. The reason I chose this dataset is because many people are addicted to drugs ranging from multiple ages and I wanted to explore which ages and what types of drugs certain people are addicted to.
 
 
-```{r setup, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
+```{r}
 # Load necessary libraries
 library(tidyverse)
 
