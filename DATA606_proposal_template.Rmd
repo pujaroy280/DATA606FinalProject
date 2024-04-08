@@ -1,0 +1,96 @@
+---
+title: "DATA 606 Data Project Proposal"
+author: "Puja Roy"
+---
+
+### Data Preparation
+
+For this final project proposal, I am planning to leverage the **Drug Use by Age** dataset from FiveThirtyEight https://github.com/fivethirtyeight/data. The reason I chose this dataset is because many people are addicted to drugs ranging from multiple ages and I wanted to explore which ages and what types of drugs certain people are addicted to.
+
+
+```{r setup, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
+# Load necessary libraries
+library(tidyverse)
+
+# Load the data
+drug_data <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/drug-use-by-age/drug-use-by-age.csv")
+
+# View the structure of the data
+str(drug_data)
+
+# Check the first few rows of the data
+head(drug_data)
+
+```
+
+
+### Research question 
+
+**How does drug use vary by age, and are there any significant relationships, trends or patterns based on certain types of drugs?**
+
+
+### Cases 
+
+**What are the cases, and how many are there?**
+
+The cases are different age groups, ranging from 12 to 65+. There are 17 cases in total.
+
+
+### Data collection 
+
+**Describe the method of data collection.**
+
+The data was collected through surveys conducted by FiveThirtyEight.
+Source: National Survey on Drug Use and Health from the Substance Abuse and Mental Health Data Archive.
+
+### Type of study 
+
+**What type of study is this (observational/experiment)?**
+
+This study is observational.
+
+
+### Data Source 
+
+**If you collected the data, state self-collected. If not, provide a citation/link.**
+
+The data was collected by FiveThirtyEight and is publicly available on their GitHub repository.
+Source: National Survey on Drug Use and Health from the Substance Abuse and Mental Health Data Archive.
+
+
+### Dependent Variable
+
+**What is the response variable? Is it quantitative or qualitative?**
+
+The response variable is the percentage of people who use each drug within different age groups. It is quantitative.
+
+### Independent Variable(s)
+
+Age is the independent variable in this study.
+
+
+### Relevant summary statistics 
+
+**Provide summary statistics for each the variables. Also include appropriate visualizations related to your research question (e.g. scatter plot, boxplots, etc). This step requires the use of R, hence a code chunk is provided below. Insert more code chunks as needed.**
+
+```{r}
+# Summary statistics
+summary(drug_data)
+
+# Visualizations
+# Boxplot of marijuana use by age
+ggplot(drug_data, aes(x = as.factor(age), y = marijuana_use)) +
+  geom_point() +
+  labs(title = "Marijuana Use by Age Group",
+       x = "Age Group",
+       y = "Percentage of Users")
+
+# Scatterplot of cocaine use by age
+ggplot(drug_data, aes(x = age, y = cocaine_use)) +
+  geom_point() +
+  labs(title = "Cocaine Use by Age",
+       x = "Age",
+       y = "Percentage of Users")
+
+```
+
