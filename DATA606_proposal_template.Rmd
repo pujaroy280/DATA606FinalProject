@@ -10,6 +10,10 @@ For this final project proposal, I am planning to leverage the **Drug Use by Age
 
 ```{r}
 # Load necessary libraries
+#install.packages("psych")  # Install the psych package
+library(psych)             # Load the psych package
+
+library(dplyr)
 library(tidyverse)
 
 # Load the data
@@ -20,6 +24,57 @@ str(drug_data)
 
 # Check the first few rows of the data
 head(drug_data)
+
+# Summary statistics for quantitative variables
+describe(drug_data)
+
+# Summary statistics by age group
+describeBy(drug_data, group = drug_data$age)
+
+# Frequency table for age group
+age_table <- table(drug_data$age)
+print(age_table)
+
+
+```
+
+```{r}
+# Print column names
+colnames(drug_data)
+```
+```{r}
+# Define a function to create scatterplots with linear regression lines
+create_scatterplot <- function(data, drug_name) {
+  ggplot(data, aes(x = age, y = !!sym(drug_name))) +
+    geom_point(color = "darkblue") +
+    geom_smooth(method = "lm", se = FALSE, color = "red") +
+    labs(title = paste("Relationship between Age and", drug_name),
+         x = "Age",
+         y = paste("Percentage of", drug_name, "Users"))
+}
+
+# Create scatterplots for each drug
+scatterplots <- lapply(names(drug_data)[3:ncol(drug_data)], function(drug_name) {
+  create_scatterplot(drug_data, drug_name)
+})
+
+# Output the scatterplots
+scatterplots
+
+
+
+```
+
+```{r}
+# Bar plot of average marijuana use by age group
+bar_plot <- ggplot(drug_data, aes(x = as.factor(age), y = marijuana_use)) +
+  stat_summary(fun = mean, geom = "bar", fill = "skyblue") +
+  labs(title = "Average Marijuana Use by Age Group (Bar Plot)",
+       x = "Age Group",
+       y = "Average Percentage of Users")
+
+# Output the plots
+list(bar_plot)
 
 ```
 
@@ -93,4 +148,5 @@ ggplot(drug_data, aes(x = age, y = cocaine_use)) +
        y = "Percentage of Users")
 
 ```
+
 
