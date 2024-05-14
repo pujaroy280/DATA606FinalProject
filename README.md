@@ -1,3 +1,6 @@
-# DATA606FinalProject_Proposal
+# DATA606FinalProject
 
-Rpubs: https://rpubs.com/pujaroy280/DATA606FinalProjectProposal
+Rpubs Project Proposal: https://rpubs.com/pujaroy280/DATA606FinalProjectProposal
+
+Rpubs Final Project: https://rpubs.com/pujaroy280/DATA606FinalProject
+
