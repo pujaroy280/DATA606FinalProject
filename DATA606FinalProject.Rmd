@@ -1,0 +1,506 @@
+---
+title: "DATA 606: Final Project"
+author: "Puja Roy"
+date: "5/10/24"
+output: openintro::lab_report
+---
+
+### Introduction
+
+ I leveraged the Drug Use by Age dataset from FiveThirtyEight https://github.com/fivethirtyeight/data. The reason I chose this dataset is because many people are addicted to drugs ranging from multiple ages and I wanted to explore which ages and what types of drugs certain people are addicted to. 
+ 
+### Abstract
+
+This final project utilizes the "Drug Use by Age" dataset from FiveThirtyEight to explore the relationship between age and drug use. The primary research question investigates how drug use varies by age and identifies significant trends and patterns for specific substances. The dataset comprises survey data from the National Survey on Drug Use and Health, covering 17 distinct age groups ranging from 12 to 65+. The study is observational, with age as the independent variable and the percentage of users for various drugs as the dependent variables. 
+
+Using linear regression models, I analyzed the use of substances such as crack, alcohol, and heroin across different age groups. Each model revealed a straight line of best fit, indicating linear relationships between age and drug use for these substances. The analysis provided insights into how the propensity for drug use changes with age, highlighting significant relationships where appropriate. 
+
+By examining these patterns, the study aims to enhance understanding of drug addiction across age demographics, providing valuable information for public health strategies and interventions. The data and findings underscore the importance of age-specific approaches in addressing substance abuse.
+ 
+```{r load-packages, message=FALSE}
+#install.packages("DT")
+library(DT)
+library(tidyverse)
+library(openintro)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(ggplot2)
+```
+
+### Load the Data
+
+```{r}
+# Load the data
+drug_data <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/drug-use-by-age/drug-use-by-age.csv")
+
+# View the structure of the data
+str(drug_data)
+
+# Remove NA values
+clean_drug_data <- na.omit(drug_data)
+```
+
+```{r}
+# View the structure of the cleaned data
+str(clean_drug_data)
+
+# Summary statistics for the cleaned data
+summary(clean_drug_data)
+
+```
+
+```{r}
+# Summary statistics for quantitative variables
+describe(clean_drug_data)
+```
+
+```{r}
+# Summary statistics by age group
+describeBy(clean_drug_data, group = drug_data$age)
+```
+
+```{r}
+# Frequency table for age group
+age_table <- table(clean_drug_data$age)
+print(age_table)
+```
+
+```{r}
+# Print column names
+colnames(clean_drug_data)
+```
+
+
+### Exploratory Data Analysis (EDA)
+
+```{r}
+datatable(clean_drug_data)
+```
+
+### Data Visualizations
+
+I used density plots to visualize the distribution of drug use percentages across different age groups. They provide a smooth, continuous representation of the data's distribution, allowing for easier identification of patterns and trends that may not be as apparent in histograms or other types of plots.
+
+### Density Plots
+
+```{r}
+# Density plots for each drug
+density_plots <- lapply(names(clean_drug_data)[3:ncol(clean_drug_data)], function(drug_name) {
+  ggplot(clean_drug_data, aes_string(x = drug_name)) +
+    geom_density(fill = "skyblue", color = "black") +
+    labs(title = paste("Density Plot of", drug_name, "Use"),
+         x = paste(drug_name, "Use"),
+         y = "Density")
+})
+
+# Output the density plots
+density_plots
+
+```
+
+### QQ Plots
+
+I used QQ plots help assess the normality of the data distributions.
+
+```{r}
+# QQ plots for each drug
+qq_plots <- lapply(names(clean_drug_data)[3:ncol(clean_drug_data)], function(drug_name) {
+  ggplot(clean_drug_data, aes_string(sample = drug_name)) +
+    stat_qq() +
+    stat_qq_line() +
+    labs(title = paste("QQ Plot of", drug_name, "Use"),
+         x = "Theoretical Quantiles",
+         y = paste("Sample Quantiles of", drug_name))
+})
+
+# Output the QQ plots
+qq_plots
+
+```
+
+
+### Summary Statistics
+
+The summary statistics for each drug and age group provides insights into the typical usage patterns, the range of usage, and the presence of any outliers.
+
+```{r}
+# Summary statistics for each drug
+summary_stats <- lapply(names(clean_drug_data)[3:ncol(clean_drug_data)], function(drug_name) {
+  summary(clean_drug_data[[drug_name]])
+})
+
+# Output the summary statistics
+summary_stats
+
+```
+
+### Linear Regression Models
+
+To analyze the relationship between age and drug use, I created linear regression models for various substances, including cocaine, crack, alcohol, and heroin. The linear regression model for each drug helps to understand how drug use percentage changes with age.
+
+Null Hypothesis (H0): Age has no effect on the percentage of users of inhalant use.
+Alternative Hypothesis (H1): Age has a significant effect on the percentage of users of Marijuana.
+
+Cocaine Use:
+H0: Age has no effect on the percentage of cocaine users.
+H1: Age has a significant effect on the percentage of cocaine users.
+
+```{r}
+# Remove rows with any NA, NaN, or Inf values
+clean_drug_data <- drug_data %>%
+  mutate(across(everything(), ~ifelse(is.nan(.), NA, .))) %>%
+  filter_all(all_vars(!is.na(.))) %>%
+  filter_all(all_vars(!is.infinite(.)))
+
+# Verify the cleaned data
+summary(clean_drug_data)
+
+```
+
+```{r}
+# Create a binary variable for marijuana use (e.g., use > 0%)
+clean_drug_data$marijuana_use_binary <- ifelse(clean_drug_data$marijuana_use > 0, 1, 0)
+
+# Check the distribution of the binary variable
+table(clean_drug_data$marijuana_use_binary)
+
+```
+
+```{r}
+# Fit a logistic regression model
+logistic_model <- glm(marijuana_use_binary ~ age, data = clean_drug_data, family = binomial)
+
+# Summary of the model
+summary(logistic_model)
+
+```
+
+```{r}
+# Convert age to numeric if necessary
+drug_data$age <- as.numeric(as.character(drug_data$age))
+
+# Remove rows with any NA, NaN, or Inf values
+clean_drug_data <- drug_data %>%
+  mutate(across(everything(), ~ifelse(is.nan(.), NA, .))) %>%
+  filter_all(all_vars(!is.na(.))) %>%
+  filter_all(all_vars(!is.infinite(.)))
+
+# Verify the cleaned data
+summary(clean_drug_data)
+
+```
+
+```{r}
+# Create a binary variable for marijuana use (e.g., use > 0%)
+clean_drug_data$marijuana_use_binary <- ifelse(clean_drug_data$marijuana_use > 0, 1, 0)
+
+# Check the distribution of the binary variable
+table(clean_drug_data$marijuana_use_binary)
+
+```
+
+```{r}
+# Fit a logistic regression model
+logistic_model <- glm(marijuana_use_binary ~ age, data = clean_drug_data, family = binomial)
+
+# Summary of the model
+summary(logistic_model)
+
+```
+
+```{r}
+# Check for finite min and max values of age
+min_age <- min(clean_drug_data$age, na.rm = TRUE)
+max_age <- max(clean_drug_data$age, na.rm = TRUE)
+
+# Generate data for prediction
+age_seq <- seq(min_age, max_age, by = 1)
+pred_data <- data.frame(age = age_seq)
+pred_data$predicted_prob <- predict(logistic_model, newdata = pred_data, type = "response")
+
+# Plot the logistic regression curve
+ggplot(clean_drug_data, aes(x = age, y = marijuana_use_binary)) +
+  geom_point(alpha = 0.5) +
+  geom_line(data = pred_data, aes(x = age, y = predicted_prob), color = "red") +
+  labs(title = "Logistic Regression: Probability of Marijuana Use by Age",
+       x = "Age",
+       y = "Probability of Marijuana Use")
+
+```
+
+```{r}
+# Convert age to numeric if necessary
+drug_data$age <- as.numeric(as.character(drug_data$age))
+
+# Remove rows with any NA, NaN, or Inf values
+clean_drug_data <- drug_data %>%
+  mutate(across(everything(), ~ifelse(is.nan(.), NA, .))) %>%
+  filter_all(all_vars(!is.na(.))) %>%
+  filter_all(all_vars(!is.infinite(.)))
+
+# Verify the cleaned data
+summary(clean_drug_data)
+
+```
+
+```{r}
+# Fit a linear regression model for cocaine use
+linear_model_cocaine <- lm(cocaine_use ~ age, data = clean_drug_data)
+
+# Summary of the model
+summary(linear_model_cocaine)
+
+```
+
+```{r}
+# Generate predictions for the plot
+clean_drug_data$predicted_cocaine_use <- predict(linear_model_cocaine, newdata = clean_drug_data)
+
+# Plot the linear regression model
+ggplot(clean_drug_data, aes(x = age, y = cocaine_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_cocaine_use), color = "red") +
+  labs(title = "Linear Regression: Cocaine Use by Age",
+       x = "Age",
+       y = "Cocaine Use (%)") +
+  theme_minimal()
+
+```
+
+```{r}
+# Fit a linear regression model for cocaine use
+linear_model_alcohol <- lm(alcohol_use ~ age, data = clean_drug_data)
+
+# Summary of the model
+summary(linear_model_alcohol)
+
+```
+
+```{r}
+# Generate predictions for the plot
+clean_drug_data$predicted_alcohol_use <- predict(linear_model_alcohol, newdata = clean_drug_data)
+
+# Plot the linear regression model
+ggplot(clean_drug_data, aes(x = age, y = cocaine_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_alcohol_use), color = "red") +
+  labs(title = "Linear Regression: Alcohol Use by Age",
+       x = "Age",
+       y = "Alcohol Use (%)") +
+  theme_minimal()
+
+```
+
+```{r}
+# Fit a linear regression model for cocaine use
+linear_model_heroin <- lm(heroin_use ~ age, data = clean_drug_data)
+
+# Summary of the model
+summary(linear_model_heroin)
+
+```
+
+```{r}
+# Generate predictions for the plot
+clean_drug_data$predicted_heroin_use <- predict(linear_model_heroin, newdata = clean_drug_data)
+
+# Plot the linear regression model
+ggplot(clean_drug_data, aes(x = age, y = heroin_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_heroin_use), color = "red") +
+  labs(title = "Linear Regression: Heroin Use by Age",
+       x = "Age",
+       y = "Heroin Use (%)") +
+  theme_minimal()
+
+```
+
+```{r}
+# Fit a linear regression model for cocaine use
+linear_model_crack <- lm(crack_use ~ age, data = clean_drug_data)
+
+# Summary of the model
+summary(linear_model_crack)
+
+```
+
+```{r}
+# Generate predictions for the plot
+clean_drug_data$predicted_crack_use <- predict(linear_model_crack, newdata = clean_drug_data)
+
+# Plot the linear regression model
+ggplot(clean_drug_data, aes(x = age, y = crack_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_crack_use), color = "red") +
+  labs(title = "Linear Regression: Crack Use by Age",
+       x = "Age",
+       y = "Crack Use (%)") +
+  theme_minimal()
+
+```
+
+```{r}
+# Fit linear regression models for each substance use
+linear_model_crack <- lm(crack_use ~ age, data = clean_drug_data)
+linear_model_alcohol <- lm(alcohol_use ~ age, data = clean_drug_data)
+linear_model_heroin <- lm(heroin_use ~ age, data = clean_drug_data)
+linear_model_marijuana <- lm(marijuana_use ~ age, data = clean_drug_data)
+linear_model_sedative <- lm(sedative_use ~ age, data = clean_drug_data)
+linear_model_painreliever <- lm(pain_releiver_use ~ age, data = clean_drug_data)
+linear_model_inhalant <- lm(inhalant_use ~ age, data = clean_drug_data)
+
+# Summarize each model
+summary(linear_model_crack)
+summary(linear_model_alcohol)
+summary(linear_model_heroin)
+summary(linear_model_marijuana)
+summary(linear_model_sedative)
+summary(linear_model_painreliever)
+summary(linear_model_inhalant)
+
+# Generate predictions for the plots
+clean_drug_data$predicted_crack_use <- predict(linear_model_crack, newdata = clean_drug_data)
+clean_drug_data$predicted_alcohol_use <- predict(linear_model_alcohol, newdata = clean_drug_data)
+clean_drug_data$predicted_heroin_use <- predict(linear_model_heroin, newdata = clean_drug_data)
+clean_drug_data$predicted_marijuana_use <- predict(linear_model_marijuana, newdata = clean_drug_data)
+clean_drug_data$predicted_sedative_use <- predict(linear_model_sedative, newdata = clean_drug_data)
+clean_drug_data$predicted_painreliever_use <- predict(linear_model_painreliever, newdata = clean_drug_data)
+clean_drug_data$predicted_inhalant_use <- predict(linear_model_inhalant, newdata = clean_drug_data)
+
+# Plot the linear regression models
+plot_crack <- ggplot(clean_drug_data, aes(x = age, y = crack_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_crack_use), color = "red") +
+  labs(title = "Linear Regression: Crack Use by Age",
+       x = "Age",
+       y = "Crack Use (%)") +
+  theme_minimal()
+
+plot_alcohol <- ggplot(clean_drug_data, aes(x = age, y = alcohol_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_alcohol_use), color = "red") +
+  labs(title = "Linear Regression: Alcohol Use by Age",
+       x = "Age",
+       y = "Alcohol Use (%)") +
+  theme_minimal()
+
+plot_heroin <- ggplot(clean_drug_data, aes(x = age, y = heroin_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_heroin_use), color = "red") +
+  labs(title = "Linear Regression: Heroin Use by Age",
+       x = "Age",
+       y = "Heroin Use (%)") +
+  theme_minimal()
+
+plot_marijuana <- ggplot(clean_drug_data, aes(x = age, y = marijuana_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_heroin_use), color = "red") +
+  labs(title = "Linear Regression: Marijuana Use by Age",
+       x = "Age",
+       y = "Marijuana Use (%)") +
+  theme_minimal()
+
+plot_sedative <- ggplot(clean_drug_data, aes(x = age, y = sedative_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_sedative_use), color = "red") +
+  labs(title = "Linear Regression: Sedative Use by Age",
+       x = "Age",
+       y = "Sedative Use (%)") +
+  theme_minimal()
+
+plot_painreliever <- ggplot(clean_drug_data, aes(x = age, y = pain_releiver_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_painreliever_use), color = "red") +
+  labs(title = "Linear Regression: Pain Reliever Use by Age",
+       x = "Age",
+       y = "Pain Reliever Use (%)") +
+  theme_minimal()
+
+plot_inhalant <- ggplot(clean_drug_data, aes(x = age, y = inhalant_use)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = predicted_inhalant_use), color = "red") +
+  labs(title = "Linear Regression: Inhalant Use by Age",
+       x = "Age",
+       y = "Inhalant Use (%)") +
+  theme_minimal()
+
+# Output the plots
+plot_crack
+plot_alcohol
+plot_heroin
+plot_marijuana
+plot_sedative
+plot_painreliever
+plot_inhalant
+
+```
+
+```{r}
+# Summarize each model
+summary_crack <- summary(linear_model_crack)
+summary_alcohol <- summary(linear_model_alcohol)
+summary_heroin <- summary(linear_model_heroin)
+summary_marijuana <- summary(linear_model_marijuana)
+
+# Extract the relevant statistics
+# For crack use
+t_value_crack <- summary_crack$coefficients["age", "t value"]
+p_value_crack <- summary_crack$coefficients["age", "Pr(>|t|)"]
+conf_int_crack <- confint(linear_model_crack)["age", ]
+
+# For alcohol use
+t_value_alcohol <- summary_alcohol$coefficients["age", "t value"]
+p_value_alcohol <- summary_alcohol$coefficients["age", "Pr(>|t|)"]
+conf_int_alcohol <- confint(linear_model_alcohol)["age", ]
+
+# For heroin use
+t_value_heroin <- summary_heroin$coefficients["age", "t value"]
+p_value_heroin <- summary_heroin$coefficients["age", "Pr(>|t|)"]
+conf_int_heroin <- confint(linear_model_heroin)["age", ]
+
+# For marijuana use
+t_value_marijuana <- summary_marijuana$coefficients["age", "t value"]
+p_value_marijuana <- summary_marijuana$coefficients["age", "Pr(>|t|)"]
+conf_int_marijuana <- confint(linear_model_marijuana)["age", ]
+
+# Output the results
+list(
+  crack_use = list(
+    t_value = t_value_crack,
+    p_value = p_value_crack,
+    conf_int = conf_int_crack
+  ),
+  alcohol_use = list(
+    t_value = t_value_alcohol,
+    p_value = p_value_alcohol,
+    conf_int = conf_int_alcohol
+  ),
+  heroin_use = list(
+    t_value = t_value_heroin,
+    p_value = p_value_heroin,
+    conf_int = conf_int_heroin
+  ),
+  marijuana_use = list(
+    t_value = t_value_marijuana,
+    p_value = p_value_marijuana,
+    conf_int = conf_int_marijuana
+  )
+)
+```
+
+### Data Analysis
+
+Based on the linear regression models, it is evident that there was a linear relationship between age and the use of crack, heroin, and alcohol. For each of these substances, the models demonstrated significant trends with age as a predictor.
+
+Crack Use
+
+The linear regression model for crack use revealed a positive relationship between age and the percentage of users. This suggests that as age increases, the percentage of individuals using crack also tends to increase. The statistical significance of this relationship indicates that age is an important factor in understanding crack use patterns.
+
+
+### Conclusion
+
+To analyze the relationship between age and drug use, I created linear regression models for various substances, including cocaine, crack, alcohol, and heroin. Each model aimed to understand how drug use percentages change with age. The summary output for each model provided key metrics such as coefficients, R-squared value, p-value, and confidence intervals. These metrics helped us evaluate the significance and strength of the relationship between age and drug use. These findings highlight the importance of age-specific interventions and policies. Younger age groups might benefit from different preventive measures compared to older groups. Public health officials and policymakers can use this information to design targeted strategies to reduce drug use among specific age demographics. Tailored education and prevention programs can be more effective in addressing drug abuse.
+
+
+
